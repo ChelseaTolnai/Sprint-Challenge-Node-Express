@@ -13,15 +13,10 @@ projectsRouter.get('/', async (req, res, next) => {
     }
 });
 
-projectsRouter.get('/:id', async (req, res, next) => {
-    const projectId = req.params.id;
+projectsRouter.get('/:id', projectIdExists, async (req, res, next) => {
     try {
-        const project = await Projects.get(projectId);
-        if (project) {
-            res.status(200).json(project);
-        } else {
-            next({code: 404, action: 'getting', subject: 'project. Project with specified ID does not exist'});
-        }
+        const project = await Projects.get(req.params.id);
+        res.status(200).json(project);
     } catch (err) {
         next({code: 500, action: 'getting', subject: 'project'});
     }
@@ -36,12 +31,33 @@ projectsRouter.post('/', projectCheck, async (req, res, next) => {
     }
 });
 
+projectsRouter.delete('/:id', projectIdExists, async (req, res, next) => {
+    try {
+        const project = await Projects.get(req.params.id);
+        await Projects.remove(req.params.id);
+        res.status(200).json({...project, deleted: 'successful'});
+    } catch (err) {
+        next({code: 500, action: 'deleting', subject: 'project'});
+    }
+});
+
 function projectCheck (req, res, next) {
     if (!req.body.name || !req.body.description) {
         next({code: 400, action: 'updating', subject: 'post. Post name and description required'})
         return;
     } else {
         next();
+    }
+};
+
+async function projectIdExists (req, res, next) {
+    try {
+        const project = await Projects.get(req.params.id);
+        if (project) {
+            next();
+        }
+    } catch (err) {
+        next({code: 404, action: 'finding', subject: 'project. Project with specified ID does not exist'});
     }
 };
 
