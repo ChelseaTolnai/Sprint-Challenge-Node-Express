@@ -27,6 +27,24 @@ projectsRouter.get('/:id', async (req, res, next) => {
     }
 });
 
+projectsRouter.post('/', projectCheck, async (req, res, next) => {
+    try {    
+        const project = await Projects.insert({...req.body, completed: false});
+        res.status(201).json(project);
+    } catch (err) {
+        next({code: 500, action: 'adding', subject: 'project'});
+    }
+});
+
+function projectCheck (req, res, next) {
+    if (!req.body.name || !req.body.description) {
+        next({code: 400, action: 'updating', subject: 'post. Post name and description required'})
+        return;
+    } else {
+        next();
+    }
+};
+
 projectsRouter.use(projectsError);
 
 function projectsError(err, req, res, next) {
