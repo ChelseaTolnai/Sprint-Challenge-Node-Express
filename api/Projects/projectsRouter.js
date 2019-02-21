@@ -41,6 +41,18 @@ projectsRouter.delete('/:id', projectIdExists, async (req, res, next) => {
     }
 });
 
+projectsRouter.put('/:id', projectIdExists, projectCheck, async (req, res, next) => {
+    try {
+        await Projects.update(req.params.id, {...req.body});
+        const updatedProject = await Projects.get(req.params.id);
+        res.status(200).json({...updatedProject, updated: 'successful'});
+
+    } catch (error) {
+        next({code: 500, action: 'updating', subject: 'project'});
+    }
+});
+
+
 function projectCheck (req, res, next) {
     if (!req.body.name || !req.body.description) {
         next({code: 400, action: 'updating', subject: 'post. Post name and description required'})
