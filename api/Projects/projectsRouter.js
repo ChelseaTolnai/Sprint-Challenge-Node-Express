@@ -22,6 +22,15 @@ projectsRouter.get('/:id', projectIdExists, async (req, res, next) => {
     }
 });
 
+projectsRouter.get('/:id/actions', projectIdExists, async (req, res, next) => {
+    try {
+        const actions = await Projects.getProjectActions(req.params.id);
+        res.status(200).json(actions);
+    } catch (err) {
+        next({code: 500, action: 'getting', subject: 'actions for specified project'});
+    }
+});
+
 projectsRouter.post('/', projectCheck, async (req, res, next) => {
     try {    
         const project = await Projects.insert({...req.body, completed: false});
